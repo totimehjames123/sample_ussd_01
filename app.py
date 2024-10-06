@@ -7,11 +7,12 @@ def ussd():
     session_id = request.values.get('sessionId')
     service_code = request.values.get('serviceCode')
     phone_number = request.values.get('phoneNumber')
+    user_id = request.values.get('USERID')
     text = request.values.get('text', '')
 
     if text == '':
         # Screen 1: Welcome message and feelings
-        response = f"CON Welcome to my James {phone_number} NOCT1804 USSD Application.\n"
+        response = f"CON Welcome to my {user_id} USSD Application.\n"
         response += "How are you feeling?\n"
         response += "1. Feeling fine\n"
         response += "2. Feeling frisky\n"
