@@ -1,57 +1,110 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-@app.route('/ussd', methods=['GET', 'POST'])
+# In-memory session storage
+sessions = {}
+
+@app.route('/ussd', methods=['POST'])
 def ussd():
-    session_id = request.values.get('sessionId')
-    service_code = request.values.get('serviceCode')
-    phone_number = request.values.get('phoneNumber')
-    user_id = request.values.get('USERID')
-    text = request.values.get('text', '')
+    if request.method == 'POST':
+        try:
+            # Parse the incoming JSON request body
+            data = request.get_json(force=True)
+        except Exception as e:
+            return jsonify({'error': 'Invalid JSON'}), 400
 
-    if text == '':
-        # Screen 1: Welcome message and feelings
-        response = f"CON Welcome to my {user_id} USSD Application.\n"
-        response += "How are you feeling?\n"
-        response += "1. Feeling fine\n"
-        response += "2. Feeling frisky\n"
-        response += "3. Not well"
-    elif text == '1':
-        # Screen 2 for feeling fine
-        response = "CON Why are you feeling fine?\n"
-        response += "1. Money issues\n"
-        response += "2. Relationship\n"
-        response += "3. A lot"
-    elif text == '2':
-        # Screen 2 for feeling frisky
-        response = "CON Why are you feeling frisky?\n"
-        response += "1. Money issues\n"
-        response += "2. Relationship\n"
-        response += "3. A lot"
-    elif text == '3':
-        # Screen 2 for not well
-        response = "CON Why are you not well?\n"
-        response += "1. Money issues\n"
-        response += "2. Relationship\n"
-        response += "3. A lot"
-    elif text in ['1*1', '2*1', '3*1']:
-        # Screen 3 for money issues
-        feeling = "feeling fine" if text.startswith('1') else "feeling frisky" if text.startswith('2') else "not well"
-        response = f"END You are {feeling} because of Money issues."
-    elif text in ['1*2', '2*2', '3*2']:
-        # Screen 3 for relationship
-        feeling = "feeling fine" if text.startswith('1') else "feeling frisky" if text.startswith('2') else "not well"
-        response = f"END You are {feeling} because of Relationship."
-    elif text in ['1*3', '2*3', '3*3']:
-        # Screen 3 for a lot
-        feeling = "feeling fine " if text.startswith('1') else "feeling frisky" if text.startswith('2') else "not well"
-        response = f"END You are {feeling} because of A lot."
-    else:
-        # Invalid input handling
-        response = "END Invalid input. Please try again."
+        # Extract necessary USSD fields from the request
+        ussd_id = data.get('USERID', '')
+        msisdn = data.get('MSISDN', '')
+        user_data = data.get('USERDATA', '')
+        msgtype = data.get('MSGTYPE', True)  # True if first request, False if subsequent
+        session_id = data.get('SESSIONID', '')  # Extract session ID from the incoming request
 
-    return response
+        if not session_id:
+            return jsonify({'error': 'SESSIONID is missing'}), 400
+
+        if session_id not in sessions:
+            sessions[session_id] = {'screen': 1, 'feeling': '', 'reason': ''}
+
+        session = sessions[session_id]
+
+        if msgtype:
+            msg = f"Welcome to {ussd_id} USSD Application.\nHow are you feeling?\n1. Feeling fine.\n2. Feeling frisky.\n3. Not well."
+            session['screen'] = 1 
+            response_data = {
+                "USERID": ussd_id,
+                "MSISDN": msisdn,
+                "USERDATA": user_data,
+                "SESSIONID": session_id,
+                "MSG": msg,
+                "MSGTYPE": True
+            }
+        else:
+            if session['screen'] == 1:
+                if user_data == '1':
+                    session['feeling'] = 'Feeling fine'
+                elif user_data == '2':
+                    session['feeling'] = 'Feeling frisky'
+                elif user_data == '3':
+                    session['feeling'] = 'Not well'
+                else:
+                    msg = "Invalid input. Please try again!\n\nHow are you feeling?\n1. Feeling fine\n2. Feeling frisky\n3. Not well"
+                    response_data = {
+                        "USERID": ussd_id,
+                        "MSISDN": msisdn,
+                        "USERDATA": user_data,
+                        "SESSIONID": session_id,
+                        "MSG": msg,
+                        "MSGTYPE": True
+                    }
+                    return jsonify(response_data)
+
+                msg = f"Why are you {session['feeling']}?\n1. Money\n2. Relationship\n3. A lot"
+                session['screen'] = 2  
+                response_data = {
+                    "USERID": ussd_id,
+                    "MSISDN": msisdn,
+                    "USERDATA": user_data,
+                    "SESSIONID": session_id,
+                    "MSG": msg,
+                    "MSGTYPE": True
+                }
+
+            elif session['screen'] == 2:
+                if user_data == '1':
+                    session['reason'] = 'because of money'
+                elif user_data == '2':
+                    session['reason'] = 'because of relationship'
+                elif user_data == '3':
+                    session['reason'] = 'because of a lot'
+                else:
+                    msg = f"Invalid input. Please try again!\n\n. Why are you {session['feeling']}?\n1. Money\n2. Relationship\n3. A lot"
+                    response_data = {
+                        "USERID": ussd_id,
+                        "MSISDN": msisdn,
+                        "USERDATA": user_data,
+                        "SESSIONID": session_id,
+                        "MSG": msg,
+                        "MSGTYPE": True
+                    }
+                    return jsonify(response_data)
+
+                msg = f"You are {session['feeling']} {session['reason']}."
+                response_data = {
+                    "USERID": ussd_id,
+                    "MSISDN": msisdn,
+                    "USERDATA": user_data,
+                    "SESSIONID": session_id,
+                    "MSG": msg,
+                    "MSGTYPE": False  
+                }
+
+                del sessions[session_id]  
+
+        return jsonify(response_data)
+
+    return jsonify({'error': 'Method not allowed'}), 405
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True)
