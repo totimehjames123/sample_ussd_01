@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
@@ -118,4 +119,5 @@ def ussd():
     return jsonify({'error': 'Method not allowed'}), 405
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))  # Get the port from the environment variable
+    app.run(host="0.0.0.0", port=port)  # Bind to 0.0.0.0
