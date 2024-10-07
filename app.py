@@ -24,24 +24,29 @@ def ussd():
         if not session_id:
             return jsonify({'error': 'SESSIONID is missing'}), 400
 
+        # Retrieve or initialize the session based on the provided SESSIONID
         if session_id not in sessions:
             sessions[session_id] = {'screen': 1, 'feeling': '', 'reason': ''}
 
         session = sessions[session_id]
 
+        # Initial request (first screen)
         if msgtype:
+            # Screen 1: Ask how the user is feeling
             msg = f"Welcome to {ussd_id} USSD Application.\nHow are you feeling?\n1. Feeling fine.\n2. Feeling frisky.\n3. Not well."
-            session['screen'] = 1 
+            session['screen'] = 1  # Set the screen to 1
             response_data = {
                 "USERID": ussd_id,
                 "MSISDN": msisdn,
-                "USERDATA": user_data,
-                "SESSIONID": session_id,
+                # "USERDATA": user_data,
+                # "SESSIONID": session_id,
                 "MSG": msg,
                 "MSGTYPE": True
             }
         else:
+            # Handle the interaction based on the current screen
             if session['screen'] == 1:
+                # Process the user's input from Screen 1
                 if user_data == '1':
                     session['feeling'] = 'Feeling fine'
                 elif user_data == '2':
@@ -49,6 +54,7 @@ def ussd():
                 elif user_data == '3':
                     session['feeling'] = 'Not well'
                 else:
+                    # Invalid input, repeat Screen 1
                     msg = "Invalid input. Please try again!\n\nHow are you feeling?\n1. Feeling fine\n2. Feeling frisky\n3. Not well"
                     response_data = {
                         "USERID": ussd_id,
@@ -60,18 +66,20 @@ def ussd():
                     }
                     return jsonify(response_data)
 
+                # Move to Screen 2: Ask why the user feels that way
                 msg = f"Why are you {session['feeling']}?\n1. Money\n2. Relationship\n3. A lot"
-                session['screen'] = 2  
+                session['screen'] = 2  # Set the screen to 2
                 response_data = {
                     "USERID": ussd_id,
                     "MSISDN": msisdn,
-                    "USERDATA": user_data,
-                    "SESSIONID": session_id,
+                    # "USERDATA": user_data,
+                    # "SESSIONID": session_id,
                     "MSG": msg,
                     "MSGTYPE": True
                 }
 
             elif session['screen'] == 2:
+                # Process the user's input from Screen 2
                 if user_data == '1':
                     session['reason'] = 'because of money'
                 elif user_data == '2':
@@ -79,27 +87,30 @@ def ussd():
                 elif user_data == '3':
                     session['reason'] = 'because of a lot'
                 else:
+                    # Invalid input, repeat Screen 2
                     msg = f"Invalid input. Please try again!\n\n. Why are you {session['feeling']}?\n1. Money\n2. Relationship\n3. A lot"
                     response_data = {
                         "USERID": ussd_id,
                         "MSISDN": msisdn,
-                        "USERDATA": user_data,
-                        "SESSIONID": session_id,
+                        # "USERDATA": user_data,
+                        # "SESSIONID": session_id,
                         "MSG": msg,
                         "MSGTYPE": True
                     }
                     return jsonify(response_data)
 
+                # Move to Screen 3: Summarize the user's input
                 msg = f"You are {session['feeling']} {session['reason']}."
                 response_data = {
                     "USERID": ussd_id,
                     "MSISDN": msisdn,
-                    "USERDATA": user_data,
-                    "SESSIONID": session_id,
+                    # "USERDATA": user_data,
+                    # "SESSIONID": session_id,
                     "MSG": msg,
-                    "MSGTYPE": False  
+                    "MSGTYPE": False  # Final message, end session
                 }
 
+                # End the session after Screen 3
                 del sessions[session_id]  
 
         return jsonify(response_data)
