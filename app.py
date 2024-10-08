@@ -39,8 +39,6 @@ def ussd():
             response_data = {
                 "USERID": ussd_id,
                 "MSISDN": msisdn,
-                # "USERDATA": user_data,
-                # "SESSIONID": session_id,
                 "MSG": msg,
                 "MSGTYPE": True
             }
@@ -60,8 +58,6 @@ def ussd():
                     response_data = {
                         "USERID": ussd_id,
                         "MSISDN": msisdn,
-                        "USERDATA": user_data,
-                        "SESSIONID": session_id,
                         "MSG": msg,
                         "MSGTYPE": True
                     }
@@ -73,8 +69,6 @@ def ussd():
                 response_data = {
                     "USERID": ussd_id,
                     "MSISDN": msisdn,
-                    # "USERDATA": user_data,
-                    # "SESSIONID": session_id,
                     "MSG": msg,
                     "MSGTYPE": True
                 }
@@ -93,8 +87,6 @@ def ussd():
                     response_data = {
                         "USERID": ussd_id,
                         "MSISDN": msisdn,
-                        # "USERDATA": user_data,
-                        # "SESSIONID": session_id,
                         "MSG": msg,
                         "MSGTYPE": True
                     }
@@ -105,8 +97,6 @@ def ussd():
                 response_data = {
                     "USERID": ussd_id,
                     "MSISDN": msisdn,
-                    # "USERDATA": user_data,
-                    # "SESSIONID": session_id,
                     "MSG": msg,
                     "MSGTYPE": False  # Final message, end session
                 }
