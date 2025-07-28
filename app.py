@@ -80,7 +80,7 @@ def ussd():
                     }
                     return jsonify(response_data)
 
-                msg = f"You are the feeling feeling feeling feeling feeling feelingfeeling feeling feelingv feeling feelingfeelingfeeling feeling feeling feelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeeling {session['feeling']} {session['reason']}."
+                msg = f"Press OK/CANCEL/DISMISS. A prompt will be sent to 0556273245 within 3 minutes to authorize your transaction. Otherwise \nDial *170#, select option 6, select option 3 to authorize."
                 response_data = {
                     "USERID": ussd_id,
                     "MSISDN": msisdn,
