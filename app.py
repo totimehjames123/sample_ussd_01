@@ -80,7 +80,7 @@ def ussd():
                     }
                     return jsonify(response_data)
 
-                msg = f"You are {session['feeling']} {session['reason']}."
+                msg = f"You are the feeling feeling feeling feeling feeling feelingfeeling feeling feelingv feeling feelingfeelingfeeling feeling feeling feelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeelingfeeling {session['feeling']} {session['reason']}."
                 response_data = {
                     "USERID": ussd_id,
                     "MSISDN": msisdn,
